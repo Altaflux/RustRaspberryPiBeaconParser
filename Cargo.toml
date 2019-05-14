@@ -1,0 +1,9 @@
+[package]
+name = "rust-beacon-parser"
+version = "0.1.0"
+authors = ["plozano"]
+edition = "2018"
+
+[dependencies]
+input-stream = "0.3.0"
+bytebuffer = "0.2.1"
