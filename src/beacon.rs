@@ -89,8 +89,8 @@ pub fn parseHCIDump(scanner_id: &str, packet: String) {
      let now = SystemTime::now();
 
     Beacon{
-        scanner_id: "".to_owned(),
-        uuid: "".to_owned(), 
+        scanner_id: scanner_id.to_owned(),
+        uuid: uuid.into_iter().collect(), 
         scanner_sequence_no: 0, 
         code: code,
         manufacturer: manufacturer, 
