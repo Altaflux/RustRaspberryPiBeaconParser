@@ -5,7 +5,9 @@ const BADDR_SIZE:i32 = 6;
 const UUID_SIZE:i32 = 16;
 
 use std::time::{Duration, SystemTime};
-   
+use bytebuffer::ByteBuffer;
+
+
 pub struct Beacon {
     scanner_id: String,
     uuid: String,
@@ -20,6 +22,14 @@ pub struct Beacon {
     message_type: i32,
     time: SystemTime,
 }
+
+pub fn fromByteMessage(msg: &[u8], length: usize) {
+    let mut dis = ByteBuffer::from_bytes(&msg[0..length]);
+
+    let version = dis.read_i32();
+    let scanner_id = dis.read_string();
+}
+
 pub fn parseHCIDump(scanner_id: &str, packet: String) {
     let size = packet.len();
 
