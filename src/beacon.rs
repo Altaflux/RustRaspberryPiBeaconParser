@@ -4,9 +4,10 @@ const HCIDUMP_PREFIX:i32 = 7;
 const BADDR_SIZE:i32 = 6;
 const UUID_SIZE:i32 = 16;
 
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, SystemTime, SystemTimeError, UNIX_EPOCH};
 use bytebuffer::ByteBuffer;
 
+const VERSION:i32 = 5;
 
 pub struct Beacon {
     scanner_id: String,
@@ -23,11 +24,65 @@ pub struct Beacon {
     time: SystemTime,
 }
 
-pub fn fromByteMessage(msg: &[u8], length: usize) {
+pub fn fromByteMessage(msg: &[u8], length: usize) -> Result<Beacon, ()> {
     let mut dis = ByteBuffer::from_bytes(&msg[0..length]);
 
     let version = dis.read_i32();
     let scanner_id = dis.read_string();
+
+    let uuid = dis.read_string();
+    let code = dis.read_i32();
+    let manufacturer = dis.read_i32();
+    let major = dis.read_i32();
+    let minor = dis.read_i32();
+    let power = dis.read_i32();
+    let calibrated_power = dis.read_i32();
+    let rssi = dis.read_i32();
+    let message_type = dis.read_i32();
+    let heartbeat  = dis.read_i32();
+    let time = dis.read_u64();
+
+
+    Ok(Beacon{
+        scanner_id: scanner_id,
+        uuid: uuid, 
+        scanner_sequence_no: 0, 
+        code: code,
+        manufacturer: manufacturer, 
+        major: major, 
+        minor: minor,
+        power: power,
+        calibrated_power: calibrated_power,
+        rssi: rssi,
+        time: match UNIX_EPOCH.checked_add(Duration::from_millis(time as u64)) {
+            Some(name) => name,
+            None => UNIX_EPOCH,
+        },
+        message_type: message_type
+    })
+
+}
+
+impl Beacon {
+    pub fn toByteMessage(&self) -> Vec<u8> {
+        let mut dos = ByteBuffer::new();
+        dos.write_i32(VERSION);
+        dos.write_bytes(self.scanner_id.as_bytes());
+        dos.write_bytes(self.uuid.as_bytes());
+        dos.write_i32(self.code);
+        dos.write_i32(self.manufacturer);
+        dos.write_i32(self.major);
+        dos.write_i32(self.minor);
+        dos.write_i32(self.power);
+        dos.write_i32(self.calibrated_power);
+        dos.write_i32(self.rssi);
+        dos.write_u64(match self.time.duration_since(UNIX_EPOCH) {
+            Ok(name) => name.as_millis() as u64,
+            Err(_) => 0 as u64,
+        });
+        dos.write_i32(self.message_type);
+        return dos.read_bytes(dos.len());
+    }
 }
 
 pub fn parseHCIDump(scanner_id: &str, packet: String) {
