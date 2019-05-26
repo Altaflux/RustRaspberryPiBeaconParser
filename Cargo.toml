@@ -7,3 +7,16 @@ edition = "2018"
 [dependencies]
 input-stream = "0.3.0"
 bytebuffer = "0.2.1"
+stomp = {git = "https://github.com/yjh0502/stomp-rs.git"}
+#rust-mq = {git = "https://github.com/timvisee/rust-mq.git"}
+tokio-io = "0.1"
+tokio = "0.1.20"
+futures = "0.1"
+env_logger = "0.6.1"
+log = "0.4.6"
+#paho-mqtt = "0.5.0"
+[dependencies.paho-mqtt]
+version = "0.5.0"
+features = []
+default-features = false
+
