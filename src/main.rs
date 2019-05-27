@@ -19,7 +19,7 @@ extern crate env_logger;
 fn main() {
     println!("Hello, world!");
 
-    let mut publisher = publisher::stomp::StompPublisher::new("127.0.0.1:61613",61613,  "test1");
+    let mut publisher = publisher::mqtt::MqttPublisher::new("127.0.0.1:1883", "test1");
     publisher.publish2("message: &str");
     std::thread::sleep_ms(2000);
     println!("message sent");

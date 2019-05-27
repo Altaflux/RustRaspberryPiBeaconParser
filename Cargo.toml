@@ -17,6 +17,6 @@ log = "0.4.6"
 #paho-mqtt = "0.5.0"
 [dependencies.paho-mqtt]
 version = "0.5.0"
-features = []
+features = ["bundled"]
 default-features = false
 
