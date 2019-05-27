@@ -12,9 +12,9 @@ pub struct MqttPublisher {
 }
 
 impl MqttPublisher {
-    pub fn new(address: &str,  destination: &str) -> Self {
+    pub fn new(address: &str,  destination: &str) -> MqttPublisher {
         let host = env::args().skip(1).next().unwrap_or(
-                "tcp://localhost:1883".to_string()
+               address.to_string()
         );
 
         let cli = mqtt::AsyncClient::new(host).unwrap_or_else(|err| {
@@ -28,7 +28,7 @@ impl MqttPublisher {
             println!("Unable to connect: {:?}", e);
             process::exit(1);
 	    }
-        Self {
+        MqttPublisher {
             connection: cli,
             destination: destination.to_owned()
         }
@@ -47,7 +47,7 @@ impl MqttPublisher {
 }
 
 
-impl super::publisher::Publisher for MqttPublisher {
+ impl super::publisher::Publisher for MqttPublisher {
     fn publish(&mut self, message: &Beacon) {
       //  let destination = self.destination;
         let topic = mqtt::Topic::new(&self.connection, 

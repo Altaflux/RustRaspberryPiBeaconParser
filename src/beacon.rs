@@ -70,7 +70,7 @@ impl Beacon {
         })
     }
 
-    pub fn new_from_packet(scanner_id: &str, packet: String)-> Beacon {
+    pub fn new_from_packet(scanner_id: &str, packet: &str)-> Beacon {
         let size = packet.len();
 
         let mut index = 2 + HCIDUMP_PREFIX * 3;

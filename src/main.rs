@@ -2,7 +2,7 @@
 
 mod beacon;
 mod publisher;
-//mod bytebuffer::;
+mod parser;
 extern crate stomp;
 extern crate tokio_io;
 extern crate tokio;
