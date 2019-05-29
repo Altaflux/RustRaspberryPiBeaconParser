@@ -3,6 +3,7 @@
 mod beacon;
 mod publisher;
 mod parser;
+mod sample;
 extern crate stomp;
 extern crate tokio_io;
 extern crate tokio;
@@ -15,7 +16,9 @@ use crate::beacon::*;
 use publisher::mqtt::*;
 #[macro_use] extern crate log;
 extern crate env_logger;
-
+extern crate rumble;
+extern crate rand;
+ 
 fn main() {
     println!("Hello, world!");
 
