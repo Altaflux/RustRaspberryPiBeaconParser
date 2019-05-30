@@ -16,10 +16,11 @@ env_logger = "0.6.1"
 log = "0.4.6"
 quicli = "0.4"
 structopt = "0.2"
-rumble = "0.3.0"
+rumble = {git = "https://github.com/mwylde/rumble.git"}
 blurz = "0.4.0"
 rand = "0.6.5"
 dbus = "0.6"
+#rand = "0.6.5"
 #paho-mqtt = "0.5.0"
 [dependencies.paho-mqtt]
 git = "https://github.com/Altaflux/paho.mqtt.rust.git"
