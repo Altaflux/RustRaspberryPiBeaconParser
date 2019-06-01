@@ -9,11 +9,6 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
-const UUID_SIZE:usize = 16;
-// The minimum size of manufacturer data we are interested in. This consists of:
-// manufacturer(2), code(2), uuid(16), major(2), minor(2), calibrated power(1)
-const MIN_MANUFACTURER_DATA_SIZE: usize = 2 + 2 + UUID_SIZE + 2 + 2 + 1;
-
 pub fn main() {
     let manager = Manager::new().unwrap();
 
@@ -22,14 +17,18 @@ pub fn main() {
     let mut adapter = adapters.into_iter().nth(0).unwrap();
     println!("Post adapter");
     // reset the adapter -- clears out any errant state
-    //adapter = manager.down(&adapter).unwrap();
-    //adapter = manager.up(&adapter).unwrap();
+    adapter = manager.down(&adapter).unwrap();
+    adapter = manager.up(&adapter).unwrap();
     println!("Post up/down");
     // connect to the adapter
     let central = adapter.connect().unwrap();
-    central.filter_duplicates(false);
-    let ar_central = Arc::new(Mutex::new(central));
 
+    let ar_central = Arc::new(Mutex::new(central));
+    //    println!("Post connect: {:?}", central.clone().lock());
+    // start scanning for devices
+
+    // instead of waiting, you can use central.on_event to be notified of
+    // new devices
 
     let central_2 = ar_central.clone();
     let central_3 = ar_central.clone();
@@ -40,47 +39,42 @@ pub fn main() {
                 let guard = central_3.lock().unwrap();
                 let per = guard.peripheral(addr).unwrap();
                 std::mem::drop(guard);
-                println!("");
-                println!("------------------------------------------------");
                 println!("Device found: {:?}", per);
-                println!("");
-                println!("Props: {:?}", per.properties());
 
-                let data = match per.properties().manufacturer_data {
-                    Some(data) => data,
-                    _ => return
-                };
-                if data.len() < MIN_MANUFACTURER_DATA_SIZE {
-                    println!("Size not enough: {:?}", data.len());
-                    return;
-                }
-                parse_beacon_info(&data);
+                println!("Props: {:?}", per.properties());
+                // match per.connect() {
+                //     Ok(_) => {
+                //         for car in per.discover_characteristics().into_iter() {
+                //             println!("Characteristics: {:?}", car);
+                //         }
+                //         println!("\n");
+                //     }
+                //     Err(err) => {
+                //         println!("Connect failed: {:?}", err);
+                //     }
+                // }
+
             }
             _ => {}
         }
     });
     central_2.lock().unwrap().on_event(handler);
-
+    //
     for i in 1..10 {
         println!("loop");
         thread::sleep(Duration::from_secs(5));
     }
 
-
-}
-
-
-fn parse_beacon_info(data: &Vec<u8>) {
-
-    let manufacturer = 256 * data[0] as i32 + data[1] as i32;
-    let code = 256 * data[2] as i32 + data[3] as i32;
-
-    let mut index:usize = 4;
-    use uuid::{Builder};
-    let uuid = Builder::from_slice(&data[4.. 4 + UUID_SIZE]);
-    index =  index + UUID_SIZE;
-
-    println!("manufacturer: {:?}", manufacturer);
-    println!("code: {:?}", code);
-    println!("uuid: {:?}", uuid);
+    // find the device we're interested in
+    // for light in central.peripherals().into_iter() {
+    //     println!("Device: {:?}", light);
+    //     println!("");
+    //     let props = light.properties();
+    //     println!("Props: {:?}", props);
+    //     for car in light.discover_characteristics().into_iter() {
+    //         println!("Characteristics: {:?}", car);
+    //     }
+    //     println!("");
+    //     println!("\n");
+    // }
 }

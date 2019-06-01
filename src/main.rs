@@ -4,6 +4,7 @@ mod beacon;
 mod publisher;
 mod parser;
 mod sample;
+mod rando_testt;
 extern crate stomp;
 extern crate tokio_io;
 extern crate tokio;
@@ -18,12 +19,17 @@ use publisher::mqtt::*;
 extern crate env_logger;
 extern crate rumble;
 extern crate rand;
- 
-fn main() {
-    println!("Hello, world!");
 
-    let mut publisher = publisher::mqtt::MqttPublisher::new("127.0.0.1:1883", "test1");
-    publisher.publish2("message: &str");
-    std::thread::sleep_ms(2000);
-    println!("message sent");
+// fn main() {
+//     println!("Hello, world!");
+//     let fjkd = "sfds";
+//
+//     let mut publisher = publisher::mqtt::MqttPublisher::new("127.0.0.1:1883", "test1");
+//     publisher.publish2("message: &str");
+//     std::thread::sleep_ms(2000);
+//     println!("message sent");
+// }
+
+fn main() {
+    rando_testt::main();
 }
