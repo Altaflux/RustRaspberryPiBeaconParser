@@ -16,7 +16,7 @@ env_logger = "0.6.1"
 log = "0.4.6"
 quicli = "0.4"
 structopt = "0.2"
-rumble = {git = "https://github.com/mwylde/rumble.git"}
+rumble = {path = "/home/pablo/rumble"}
 blurz = "0.4.0"
 rand = "0.6.5"
 dbus = "0.6"

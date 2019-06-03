@@ -27,6 +27,7 @@ pub fn main() {
     println!("Post up/down");
     // connect to the adapter
     let central = adapter.connect().unwrap();
+    central.active(false);
     central.filter_duplicates(false);
     let ar_central = Arc::new(Mutex::new(central));
 
@@ -34,6 +35,7 @@ pub fn main() {
     let central_2 = ar_central.clone();
     let central_3 = ar_central.clone();
     let handler: EventHandler = Box::new(move |ev| {
+        println!("Event type: {:?}", ev);
         match ev {
             CentralEvent::DeviceDiscovered(addr)
             | CentralEvent::DeviceUpdated(addr) => {
@@ -44,7 +46,7 @@ pub fn main() {
                 println!("------------------------------------------------");
                 println!("Device found: {:?}", per);
                 println!("");
-                println!("Props: {:?}", per.properties());
+                //println!("Props: {:?}", per.properties());
 
                 let data = match per.properties().manufacturer_data {
                     Some(data) => data,
@@ -83,4 +85,21 @@ fn parse_beacon_info(data: &Vec<u8>) {
     println!("manufacturer: {:?}", manufacturer);
     println!("code: {:?}", code);
     println!("uuid: {:?}", uuid);
+    println!("uuid u8: {:?}", &data[4.. 4 + UUID_SIZE]);
+
+    let m0 = data[index];
+    let m1 = data[index + 1];
+    index = index + 2;
+    let major = 256 * m0 as u16 + m1 as u16;
+
+    let m0 = data[index];
+    let m1 = data[index + 1];
+    index = index + 2;
+    let minor = 256 * m0 as u16 + m1 as u16;
+
+    println!("major: {:?}", major);
+    println!("minor: {:?}", minor);
+
+    let calibrated_power = data[index] as i32 - 256;
+    println!("calibrated_power: {:?}", calibrated_power);
 }
