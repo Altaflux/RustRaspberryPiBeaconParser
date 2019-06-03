@@ -8,7 +8,7 @@ use std::time::{Duration, SystemTime, SystemTimeError, UNIX_EPOCH};
 use bytebuffer::ByteBuffer;
 
 const VERSION:i32 = 5;
-
+#[derive(Debug)]
 pub struct Beacon {
     scanner_id: String,
     uuid: String,
@@ -53,11 +53,11 @@ impl Beacon {
 
         Ok(Beacon{
             scanner_id: scanner_id,
-            uuid: uuid, 
-            scanner_sequence_no: 0, 
+            uuid: uuid,
+            scanner_sequence_no: 0,
             code: code,
-            manufacturer: manufacturer, 
-            major: major, 
+            manufacturer: manufacturer,
+            major: major,
             minor: minor,
             power: power,
             calibrated_power: calibrated_power,
@@ -87,7 +87,7 @@ impl Beacon {
 
             index += 3 * (length + 1);
             length = mystoi(&packet[index as usize..2], 16);
-            type_ = mystoi(&packet[index as usize + 3..2], 16);   
+            type_ = mystoi(&packet[index as usize + 3..2], 16);
         }
 
         if index as usize >= size {
@@ -140,11 +140,11 @@ impl Beacon {
 
         Beacon{
             scanner_id: scanner_id.to_owned(),
-            uuid: uuid.into_iter().collect(), 
-            scanner_sequence_no: 0, 
+            uuid: uuid.into_iter().collect(),
+            scanner_sequence_no: 0,
             code: code,
-            manufacturer: manufacturer, 
-            major: imajor, 
+            manufacturer: manufacturer,
+            major: imajor,
             minor: iminor,
             power: 0,
             calibrated_power: ipower,
