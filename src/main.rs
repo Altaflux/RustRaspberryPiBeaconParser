@@ -21,6 +21,11 @@ use publisher::mqtt::*;
 extern crate env_logger;
 extern crate rumble;
 extern crate rand;
+use  std::error::Error;
+use blurz::bluetooth_session::BluetoothSession as Session;
+
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 
 // fn main() {
 //     println!("Hello, world!");
@@ -32,6 +37,15 @@ extern crate rand;
 //     println!("message sent");
 // }
 
-fn main() {
-    rando_testt::main();
+fn main() -> Result<(), Box<Error>>{
+    //rando_testt::main();
+
+    let bt_session = &Session::create_session(None)?;
+    let mut should_stop = Arc::new(AtomicBool::new(false));
+    let mut listener = bluetooth::BlurzListener::new(bt_session, should_stop)?;
+    //Box<Fn(Beacon) + Send>;
+    listener.work(Box::new(move |ds| {
+        println!("THE BEACON :D:  {:?}", ds);
+    }));
+    Ok(())
 }

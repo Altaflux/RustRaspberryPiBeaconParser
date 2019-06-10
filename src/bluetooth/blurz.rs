@@ -6,8 +6,9 @@ use blurz::bluetooth_discovery_session::BluetoothDiscoverySession as DiscoverySe
 use blurz::bluetooth_session::BluetoothSession as Session;
 use simple_error::SimpleError;
 use std::error::Error;
-use std::sync::atomic::{AtomicBool, Ordering};
+
 use std::sync::mpsc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
@@ -22,7 +23,7 @@ use std::time::{SystemTime, SystemTimeError, UNIX_EPOCH};
 pub struct BlurzListener<'a> {
     should_stop: Arc<AtomicBool>,
     receiver: Option<mpsc::Receiver<()>>,
-    msg_sender: Option<EventHandler>,
+    //msg_sender: Option<EventHandler>,
     session: &'a Session,
     adapter: Adapter<'a>,
 }
@@ -45,13 +46,13 @@ impl<'a> BlurzListener<'a> {
         Ok(BlurzListener {
             should_stop: should_stop,
             receiver: None,
-            msg_sender: None,
+        //    msg_sender: None,
             session: &session,
             adapter: adapter,
         })
     }
 
-    pub fn work(&mut self) {
+    pub fn work(&mut self, handler: EventHandler) {
         let discovery_session =
             match DiscoverySession::create_session(self.session, self.adapter.get_id()) {
                 Ok(discovery_session) => discovery_session,
@@ -83,7 +84,7 @@ impl<'a> BlurzListener<'a> {
                 let device = Device::new(self.session, d.clone());
                 match build_device(&device) {
                     Ok(beacon) => {
-                        self.process_beacon(beacon, &device);
+                        self.process_beacon(beacon, &device, &handler);
                     }
                     Err(_) => {}
                 }
@@ -114,7 +115,7 @@ impl<'a> BlurzListener<'a> {
         };
     }
 
-    fn process_beacon(&self, beacon: Beacon, device: &Device) {
+    fn process_beacon(&self, beacon: Beacon, device: &Device, handler: &EventHandler) {
         if beacon.major == 85 {
             println!("--------");
             println!(
@@ -127,12 +128,7 @@ impl<'a> BlurzListener<'a> {
 
             println!("ALL PROPS D: {:?}", device.get_all_properties());
             println!("Beacon Info: {:?}", beacon);
-            match &self.msg_sender {
-                Some(handler) => {
-                    handler(beacon);
-                }
-                None => {}
-            };
+            handler(beacon);
         }
     }
 }
