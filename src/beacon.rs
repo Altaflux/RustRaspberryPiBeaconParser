@@ -10,18 +10,18 @@ use bytebuffer::ByteBuffer;
 const VERSION:i32 = 5;
 #[derive(Debug)]
 pub struct Beacon {
-    scanner_id: String,
-    uuid: String,
-    scanner_sequence_no: i32,
-    code: i32,
-    manufacturer: i32,
-    major: i32,
-    minor: i32,
-    power: i32,
-    calibrated_power: i32,
-    rssi: i32,
-    message_type: i32,
-    time: SystemTime,
+    pub scanner_id: String,
+    pub uuid: String,
+    pub scanner_sequence_no: i32,
+    pub code: i32,
+    pub manufacturer: i32,
+    pub major: i32,
+    pub minor: i32,
+    pub power: i32,
+    pub calibrated_power: i32,
+    pub rssi: i32,
+    pub message_type: i32,
+    pub time: SystemTime,
 }
 
 

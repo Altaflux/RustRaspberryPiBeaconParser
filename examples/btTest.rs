@@ -12,7 +12,7 @@ use std::time::Duration;
 const UUID_SIZE:usize = 16;
 // The minimum size of manufacturer data we are interested in. This consists of:
 // manufacturer(2), code(2), uuid(16), major(2), minor(2), calibrated power(1)
-const MIN_MANUFACTURER_DATA_SIZE: usize = 2 + 2 + UUID_SIZE + 2 + 2 + 1;
+const MIN_MANUFACTURER_DATA_SIZE: usize = 1 + 1 + UUID_SIZE + 2 + 2 + 1;
 
 pub fn main() {
     let manager = Manager::new().unwrap();
@@ -35,13 +35,17 @@ pub fn main() {
     let central_2 = ar_central.clone();
     let central_3 = ar_central.clone();
     let handler: EventHandler = Box::new(move |ev| {
-        println!("Event type: {:?}", ev);
+        //println!("Event type: {:?}", ev);
         match ev {
             CentralEvent::DeviceDiscovered(addr)
             | CentralEvent::DeviceUpdated(addr) => {
                 let guard = central_3.lock().unwrap();
                 let per = guard.peripheral(addr).unwrap();
                 std::mem::drop(guard);
+                // if (format!("{:?}",per.address()) != "B0:91:22:F7:6B:49") {
+                //     return;
+                //
+                // }
                 println!("");
                 println!("------------------------------------------------");
                 println!("Device found: {:?}", per);
@@ -73,6 +77,42 @@ pub fn main() {
 
 
 fn parse_beacon_info(data: &Vec<u8>) {
+
+    let manufacturer = 256 * data[0] as i32 ;
+    let code = 256 * data[1] as i32 ;
+
+    let mut index:usize = 3;
+    use uuid::{Builder};
+    let uuid = Builder::from_slice(&data[3.. 3 + UUID_SIZE]);
+    index =  index + UUID_SIZE;
+
+
+    let m0 = data[index];
+    let m1 = data[index + 1];
+    index = index + 2;
+    let major = 256 * m0 as u16 + m1 as u16;
+
+    let m0 = data[index];
+    let m1 = data[index + 1];
+    index = index + 2;
+    let minor = 256 * m0 as u16 + m1 as u16;
+    let calibrated_power = data[index] as i32 - 256;
+
+    if (major == 85) {
+        println!("major: {:?}", major);
+        println!("minor: {:?}", minor);
+
+            println!("manufacturer: {:?}", manufacturer);
+            println!("code: {:?}", code);
+            println!("uuid: {:?}", uuid);
+            println!("uuid u8: {:?}", &data[3.. 3 + UUID_SIZE]);
+        println!("calibrated_power: {:?}", calibrated_power);
+    }
+
+}
+
+
+fn parse_beacon_info_faulty(data: &Vec<u8>) {
 
     let manufacturer = 256 * data[0] as i32 + data[1] as i32;
     let code = 256 * data[2] as i32 + data[3] as i32;

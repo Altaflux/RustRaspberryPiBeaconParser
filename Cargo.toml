@@ -21,6 +21,7 @@ blurz = {path = "/home/pablo/blurz"}
 rand = "0.6.5"
 dbus = "0.6"
 uuid = "0.7"
+simple-error = "0.2.0"
 #rand = "0.6.5"
 #paho-mqtt = "0.5.0"
 [dependencies.paho-mqtt]

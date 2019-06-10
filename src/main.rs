@@ -5,9 +5,11 @@ mod publisher;
 mod parser;
 mod sample;
 mod rando_testt;
+mod bluetooth;
 extern crate stomp;
 extern crate tokio_io;
 extern crate tokio;
+extern crate simple_error;
 #[macro_use]
 extern crate futures;
 extern crate paho_mqtt;
