@@ -7,8 +7,8 @@ use blurz::bluetooth_session::BluetoothSession as Session;
 use simple_error::SimpleError;
 use std::error::Error;
 
-use std::sync::mpsc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
@@ -22,8 +22,6 @@ const MIN_MANUFACTURER_DATA_SIZE: usize = 2 + UUID_SIZE + 2 + 2 + 1;
 use std::time::{SystemTime, SystemTimeError, UNIX_EPOCH};
 pub struct BlurzListener<'a> {
     should_stop: Arc<AtomicBool>,
-    receiver: Option<mpsc::Receiver<()>>,
-    //msg_sender: Option<EventHandler>,
     session: &'a Session,
     adapter: Adapter<'a>,
 }
@@ -36,7 +34,6 @@ struct SimpleBeacon {
     calibrated_power: i32,
 }
 
-
 impl<'a> BlurzListener<'a> {
     pub fn new(
         session: &'a Session,
@@ -45,8 +42,6 @@ impl<'a> BlurzListener<'a> {
         let adapter = (Adapter::init(&session))?;
         Ok(BlurzListener {
             should_stop: should_stop,
-            receiver: None,
-        //    msg_sender: None,
             session: &session,
             adapter: adapter,
         })
@@ -65,13 +60,16 @@ impl<'a> BlurzListener<'a> {
             Ok(_) => {}
             Err(err) => {
                 println!("Failure start discovery: {:?}", err);
-                discovery_session.stop_discovery().unwrap();
+                match discovery_session.stop_discovery() {
+                    Ok(_) => {println!("SUCCESS STOPPING DISCOVERY ON INIT");},
+                    Err(ee) => {println!("FAILED TO STOP DISCOVERY: {:?}", ee);}
+                };
                 return;
             }
         };
 
         while !self.should_stop.load(Ordering::Relaxed) {
-            thread::sleep(Duration::from_millis(800));
+            thread::sleep(Duration::from_millis(1100));
             let devices = match self.adapter.get_device_list() {
                 Ok(devices) => devices,
                 Err(err) => {
@@ -117,17 +115,17 @@ impl<'a> BlurzListener<'a> {
 
     fn process_beacon(&self, beacon: Beacon, device: &Device, handler: &EventHandler) {
         if beacon.major == 85 {
-            println!("--------");
-            println!(
-                "id: {} addr: {:?} rssi: {:?} txP: {:?}",
-                device.get_id(),
-                device.get_address(),
-                device.get_rssi(),
-                device.get_tx_power()
-            );
-
-            println!("ALL PROPS D: {:?}", device.get_all_properties());
-            println!("Beacon Info: {:?}", beacon);
+            // println!("--------");
+            // println!(
+            //     "id: {} addr: {:?} rssi: {:?} txP: {:?}",
+            //     device.get_id(),
+            //     device.get_address(),
+            //     device.get_rssi(),
+            //     device.get_tx_power()
+            // );
+            //
+            // println!("ALL PROPS D: {:?}", device.get_all_properties());
+            // println!("Beacon Info: {:?}", beacon);
             handler(beacon);
         }
     }

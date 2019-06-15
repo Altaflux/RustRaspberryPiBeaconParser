@@ -34,14 +34,14 @@ impl MqttPublisher {
         }
     }
 
-    pub fn publish2(&mut self, message: &str) {
-        let topic = mqtt::Topic::new(&self.connection, 
+    pub fn publish2(&self, message: &str) {
+        let topic = mqtt::Topic::new(&self.connection,
         self.destination.to_owned(), QOS);
-        
+
         let tok = topic.publish(message);
         if let Err(e) = tok.wait() {
 			println!("Error sending message: {:?}", e);
-		
+
 		}
     }
 }
@@ -50,13 +50,13 @@ impl MqttPublisher {
  impl super::publisher::Publisher for MqttPublisher {
     fn publish(&mut self, message: &Beacon) {
       //  let destination = self.destination;
-        let topic = mqtt::Topic::new(&self.connection, 
+        let topic = mqtt::Topic::new(&self.connection,
             self.destination.to_owned(), QOS);
-        
+
         let tok = topic.publish(message.to_byte_message());
         if let Err(e) = tok.wait() {
 			println!("Error sending message: {:?}", e);
-		
+
 		}
     }
 }

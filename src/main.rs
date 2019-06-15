@@ -10,6 +10,7 @@ extern crate stomp;
 extern crate tokio_io;
 extern crate tokio;
 extern crate simple_error;
+extern crate ctrlc;
 #[macro_use]
 extern crate futures;
 extern crate paho_mqtt;
@@ -41,11 +42,18 @@ fn main() -> Result<(), Box<Error>>{
     //rando_testt::main();
 
     let bt_session = &Session::create_session(None)?;
-    let mut should_stop = Arc::new(AtomicBool::new(false));
+    let should_stop = Arc::new(AtomicBool::new(false));
+    let r = should_stop.clone();
+    ctrlc::set_handler(move || {
+            r.store(true, Ordering::SeqCst);
+        }).expect("Error setting Ctrl-C handler");
+
     let mut listener = bluetooth::BlurzListener::new(bt_session, should_stop)?;
-    //Box<Fn(Beacon) + Send>;
+
+    let  publisher = publisher::mqtt::MqttPublisher::new("127.0.0.1:1883", "test1");
     listener.work(Box::new(move |ds| {
-        println!("THE BEACON :D:  {:?}", ds);
+        publisher.publish2(&format!("{:?}", ds));
+        println!("\n{:?}\n", ds);
     }));
     Ok(())
 }
