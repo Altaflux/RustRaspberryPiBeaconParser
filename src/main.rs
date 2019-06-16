@@ -50,9 +50,9 @@ fn main() -> Result<(), Box<Error>>{
 
     let mut listener = bluetooth::BlurzListener::new(bt_session, should_stop)?;
 
-    let  publisher = publisher::mqtt::MqttPublisher::new("127.0.0.1:1883", "test1");
+//    let  publisher = publisher::mqtt::MqttPublisher::new("127.0.0.1:1883", "test1");
     listener.work(Box::new(move |ds| {
-        publisher.publish2(&format!("{:?}", ds));
+        //publisher.publish2(&format!("{:?}", ds));
         println!("\n{:?}\n", ds);
     }));
     Ok(())

@@ -8,7 +8,7 @@ use uuid::Uuid;
 use blurz::bluetooth_adapter::BluetoothAdapter as Adapter;
 use blurz::bluetooth_device::BluetoothDevice as Device;
 use blurz::bluetooth_discovery_session::BluetoothDiscoverySession as DiscoverySession;
-use blurz::bluetooth_discovery_session::DiscoveryTransport;
+//use blurz::bluetooth_discovery_session::DiscoveryTransport;
 use blurz::bluetooth_session::BluetoothSession as Session;
 
 const UUID_SIZE: usize = 16;
@@ -30,16 +30,16 @@ fn test3() -> Result<(), Box<Error>> {
             return Err(err);
         }
     };
-    match session.set_discovery_filter(vec![], None, None, Some(DiscoveryTransport::LE)) {
-        Ok(_) => {}
-        Err(err) => {
-            println!("Failure set_discovery_filter");
-            println!("{:?}", err);
-            return Err(err);
-        }
-    }
+    // match session.set_discovery_filter(vec![], None, None, Some(DiscoveryTransport::LE)) {
+    //     Ok(_) => {}
+    //     Err(err) => {
+    //         println!("Failure set_discovery_filter");
+    //         println!("{:?}", err);
+    //         return Err(err);
+    //     }
+    // }
 
-    println!("filter: {:?}", session.get_discovery_filters());
+//    println!("filter: {:?}", session.get_discovery_filters());
     loop {
         thread::sleep(Duration::from_millis(200));
         match session.start_discovery() {
@@ -97,7 +97,7 @@ fn test3() -> Result<(), Box<Error>> {
                             device.get_rssi(),
                             device.get_tx_power()
                         );
-                        println!("ALL PROPS D: {:?}", device.get_all_properties());
+                        //println!("ALL PROPS D: {:?}", device.get_all_properties());
                         println!("Beacon Info: {:?}", beacon);
                         println!("manufacturer D: {:?}", manufacturer_data.1);
                     }

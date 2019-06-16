@@ -17,8 +17,8 @@ log = "0.4.6"
 quicli = "0.4"
 ctrlc = "3.1.3"
 structopt = "0.2"
-rumble = {path = "/home/pablo/rumble"}
-blurz = {path = "/home/pablo/blurz"}
+rumble = {git = "https://github.com/mwylde/rumble.git"}
+blurz = "0.4.0"
 rand = "0.6.5"
 dbus = "0.6"
 uuid = "0.7"
