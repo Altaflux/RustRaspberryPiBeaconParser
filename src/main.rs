@@ -1,32 +1,32 @@
 
 
 mod beacon;
-mod publisher;
-mod parser;
-mod sample;
-mod rando_testt;
+//mod publisher;
+//mod parser;
+//mod sample;
+//mod rando_testt;
 mod bluetooth;
-extern crate stomp;
-extern crate tokio_io;
-extern crate tokio;
+//extern crate stomp;
+//extern crate tokio_io;
+//extern crate tokio;
 extern crate simple_error;
 extern crate ctrlc;
-#[macro_use]
-extern crate futures;
+//#[macro_use]
+//extern crate futures;
 extern crate paho_mqtt;
-use publisher::*;
-use crate::publisher::*;
-use crate::beacon::*;
-use publisher::mqtt::*;
-#[macro_use] extern crate log;
-extern crate env_logger;
-extern crate rumble;
+// use publisher::*;
+// use crate::publisher::*;
+// use crate::beacon::*;
+// use publisher::mqtt::*;
+//#[macro_use] extern crate log;
+//extern crate env_logger;
+//extern crate rumble;
 extern crate rand;
 use  std::error::Error;
 use blurz::bluetooth_session::BluetoothSession as Session;
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
 
 // fn main() {
 //     println!("Hello, world!");
