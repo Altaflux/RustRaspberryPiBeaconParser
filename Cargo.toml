@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 #input-stream = "0.3.0"
-#bytebuffer = "0.2.1"
+bytebuffer = "0.2.1"
 #stomp = {git = "https://github.com/yjh0502/stomp-rs.git"}
 #rust-mq = {git = "https://github.com/timvisee/rust-mq.git"}
 #tokio-io = "0.1"
