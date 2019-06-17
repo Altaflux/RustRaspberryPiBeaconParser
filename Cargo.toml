@@ -5,22 +5,22 @@ authors = ["plozano"]
 edition = "2018"
 
 [dependencies]
-input-stream = "0.3.0"
-bytebuffer = "0.2.1"
-stomp = {git = "https://github.com/yjh0502/stomp-rs.git"}
+#input-stream = "0.3.0"
+#bytebuffer = "0.2.1"
+#stomp = {git = "https://github.com/yjh0502/stomp-rs.git"}
 #rust-mq = {git = "https://github.com/timvisee/rust-mq.git"}
-tokio-io = "0.1"
-tokio = "0.1.20"
-futures = "0.1"
+#tokio-io = "0.1"
+#tokio = "0.1.20"
+#futures = "0.1"
 env_logger = "0.6.1"
 log = "0.4.6"
-quicli = "0.4"
+#quicli = "0.4"
 ctrlc = "3.1.3"
-structopt = "0.2"
-rumble = {git = "https://github.com/mwylde/rumble.git"}
+#structopt = "0.2"
+#rumble = {git = "https://github.com/mwylde/rumble.git"}
 blurz = "0.4.0"
 rand = "0.6.5"
-dbus = "0.6"
+#dbus = "0.6"
 uuid = "0.7"
 simple-error = "0.2.0"
 #rand = "0.6.5"
