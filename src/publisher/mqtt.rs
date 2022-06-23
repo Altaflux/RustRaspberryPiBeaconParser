@@ -1,5 +1,5 @@
-use std::{env, process};
-use futures::Future;
+use std::{env, process, error::Error};
+// use futures::Future;
 use paho_mqtt as mqtt;
 use super::super::beacon::Beacon;
 
@@ -48,16 +48,13 @@ impl MqttPublisher {
 
 
  impl super::publisher::Publisher for MqttPublisher {
-    fn publish(&mut self, message: &Beacon) {
-      //  let destination = self.destination;
-        let topic = mqtt::Topic::new(&self.connection,
-            self.destination.to_owned(), QOS);
-
+    fn publish(&mut self, message: &Beacon) -> Result<(), Box<dyn Error>>{
+    
+        let topic = mqtt::Topic::new(&self.connection,self.destination.to_owned(), QOS);
         let tok = topic.publish(message.to_byte_message());
-        if let Err(e) = tok.wait() {
-			println!("Error sending message: {:?}", e);
+        tok.wait()?;
 
-		}
+		Ok(())
     }
 }
 

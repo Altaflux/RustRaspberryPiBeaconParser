@@ -8,37 +8,29 @@ use simple_error::SimpleError;
 use std::error::Error;
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use uuid::Builder;
-use uuid::Uuid;
+ use anyhow::Error as AnyhowError;
 
 const UUID_SIZE: usize = 16;
 // The minimum size of manufacturer data we are interested in. This consists of:
 // manufacturer(2), code(2), uuid(16), major(2), minor(2), calibrated power(1)
 const MIN_MANUFACTURER_DATA_SIZE: usize = 2 + UUID_SIZE + 2 + 2 + 1;
-use std::time::{SystemTime, SystemTimeError, UNIX_EPOCH};
+use std::time::{SystemTime};
 pub struct BlurzListener<'a> {
     should_stop: Arc<AtomicBool>,
     session: &'a Session,
     adapter: Adapter<'a>,
 }
 
-#[derive(Debug)]
-struct SimpleBeacon {
-    uuid: Uuid,
-    minor: u16,
-    major: u16,
-    calibrated_power: i32,
-}
 
 impl<'a> BlurzListener<'a> {
     pub fn new(
         session: &'a Session,
         should_stop: Arc<AtomicBool>,
-    ) -> Result<BlurzListener<'a>, Box<Error>> {
+    ) -> Result<BlurzListener<'a>, Box<dyn Error>> {
         let adapter = (Adapter::init(&session))?;
         Ok(BlurzListener {
             should_stop: should_stop,
@@ -47,91 +39,56 @@ impl<'a> BlurzListener<'a> {
         })
     }
 
-    pub fn work(&mut self, handler: EventHandler) {
-        let discovery_session =
-            match DiscoverySession::create_session(self.session, self.adapter.get_id()) {
-                Ok(discovery_session) => discovery_session,
-                Err(err) => {
-                    println!("Failed to get discovery session: {:}", err);
-                    return;
-                }
-            };
-        match discovery_session.start_discovery() {
-            Ok(_) => {}
-            Err(err) => {
-                println!("Failure start discovery: {:?}", err);
-                match discovery_session.stop_discovery() {
-                    Ok(_) => {println!("SUCCESS STOPPING DISCOVERY ON INIT");},
-                    Err(ee) => {println!("FAILED TO STOP DISCOVERY: {:?}", ee);}
-                };
-                return;
-            }
-        };
 
-        while !self.should_stop.load(Ordering::Relaxed) {
+    pub fn work2(&self, handler: EventHandler) -> Result<(), Box<dyn Error>> {
+
+        let discovery_session = DiscoverySession::create_session(self.session, self.adapter.get_id())?;
+        discovery_session.start_discovery()?;
+
+        while !self.should_stop.load(Ordering::SeqCst) {
             thread::sleep(Duration::from_millis(1100));
-            let devices = match self.adapter.get_device_list() {
-                Ok(devices) => devices,
-                Err(err) => {
-                    println!("Failure get device list: {:?}", err);
-                    continue;
+            
+            let devices = self.adapter.get_device_list()?;
+            
+            for device_entry in devices {
+                let device = Device::new(self.session, device_entry);
+
+                if let Ok(beacon) = build_device(&device) {
+                    self.process_beacon(beacon, &device, &handler);
                 }
-            };
-            println!("{} device(s) found", devices.len());
-            'device_loop: for d in devices {
-                let device = Device::new(self.session, d.clone());
-                match build_device(&device) {
-                    Ok(beacon) => {
-                        self.process_beacon(beacon, &device, &handler);
-                    }
-                    Err(_) => {}
-                }
-                match self.adapter.remove_device(device.get_id()) {
-                    Err(err) => println!(
-                        "Could not remove device: {:?}, reason: {:?}",
+                if let Err(err) = self.adapter.remove_device(device.get_id()) {
+                    println!("Could not remove device: {:?}, reason: {:?}",
                         device.get_id(),
-                        err
-                    ),
-                    _ => {}
-                };
-            }
-        }
-        println!("Shutting down");
-        match discovery_session.stop_discovery() {
-            Ok(_) => {}
-            Err(err) => {
-                println!("Failure stop discovery");
-                println!("{:?}", err);
-                match discovery_session.stop_discovery() {
-                    Ok(_) => {}
-                    Err(err) => {
-                        println!("SECOND Failure stop discovery");
-                        println!("SECOND {:?}", err);
-                    }
+                        err)
                 }
             }
-        };
+           
+        }
+
+        discovery_session.stop_discovery()?;
+        Ok(())
     }
+
 
     fn process_beacon(&self, beacon: Beacon, device: &Device, handler: &EventHandler) {
         if beacon.major == 85 {
-            // println!("--------");
-            // println!(
-            //     "id: {} addr: {:?} rssi: {:?} txP: {:?}",
-            //     device.get_id(),
-            //     device.get_address(),
-            //     device.get_rssi(),
-            //     device.get_tx_power()
-            // );
-            //
-            // println!("ALL PROPS D: {:?}", device.get_all_properties());
-            // println!("Beacon Info: {:?}", beacon);
+            println!("--------");
+            println!(
+                "id: {} addr: {:?} rssi: {:?} txP: {:?}",
+                device.get_id(),
+                device.get_address(),
+                device.get_rssi(),
+                device.get_tx_power()
+            );
+            
+           // println!("ALL PROPS D: {:?}", device.get_all_properties());
+            println!("Beacon Info: {:?}", beacon);
             handler(beacon);
         }
     }
 }
 
-fn build_device(device: &Device) -> Result<Beacon, Box<Error>> {
+fn build_device(device: &Device) -> Result<Beacon, Box<dyn Error>> {
     let manufacturer_data = device.get_manufacturer_data()?;
     let rssi = device.get_rssi()?;
     let manufacturer_data = match manufacturer_data.get(&(76)) {
@@ -151,22 +108,18 @@ fn build_device(device: &Device) -> Result<Beacon, Box<Error>> {
     }
 }
 
-fn parse_beacon_info(manufacturer: u16, data: &Vec<u8>, rssi: i16) -> Result<Beacon, Box<Error>> {
-    //let manufacturer = 256 * data[0] as i32 + data[1] as i32;
+fn parse_beacon_info(manufacturer: u16, data: &Vec<u8>, rssi: i16) -> Result<Beacon, Box<dyn Error>> {
+
     let code = 256 * data[1] as i32; // + data[2] as i32;
 
     let mut index: usize = 2;
 
-    let mut uuid = match Builder::from_slice(&data[index..index + UUID_SIZE]) {
+    let uuid = match Builder::from_slice(&data[index..index + UUID_SIZE]) {
         Ok(uuid) => uuid,
         Err(e) => return Err(Box::new(e)),
     };
     index = index + UUID_SIZE;
 
-    // println!("manufacturer: {:?}", manufacturer);
-    // println!("code: {:?}", code);
-    // println!("uuid: {:?}", uuid);
-    // println!("uuid u8: {:?}", &data[2..2 + UUID_SIZE]);
 
     let m0 = data[index];
     let m1 = data[index + 1];
@@ -178,17 +131,13 @@ fn parse_beacon_info(manufacturer: u16, data: &Vec<u8>, rssi: i16) -> Result<Bea
     index = index + 2;
     let minor = 256 * m0 as u16 + m1 as u16;
 
-    // println!("major: {:?}", major);
-    // println!("minor: {:?}", minor);
-
     let calibrated_power = data[index] as i32 - 256;
-    //    println!("calibrated_power: {:?}", calibrated_power);
 
     Ok(Beacon {
         scanner_id: "sdf".to_owned(),
         scanner_sequence_no: 0,
         manufacturer: manufacturer as i32,
-        uuid: format!("{:?}", uuid.build()),
+        uuid: format!("{:?}", uuid.as_uuid()),
         code: code,
         rssi: rssi as i32,
         minor: minor as i32,
